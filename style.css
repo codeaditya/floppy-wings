@@ -1,0 +1,29 @@
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #242424;
+  min-height: 100vh;
+  margin: 0;
+}
+
+#gameContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#gameCanvas {
+  background-color: #c0c0c0;
+  border: 2px solid blueviolet;
+}
+
+#resetHighScore {
+  padding: 10px 20px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
