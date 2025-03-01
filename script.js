@@ -23,6 +23,8 @@ const config = {
     highScoreTextColor: "blue",
     highScoreTextFont: "24px Arial",
     scorePadding: 10,
+    pauseTextColor: "black",
+    pauseTextFont: "36px Arial",
   },
   animation: {
     highScorePulseDuration: 500,
@@ -159,6 +161,7 @@ class Game {
     this.restartTextVisible = false;
     this.restartDelay = 1500;
     this.canRestart = false;
+    this.paused = false;
 
     this.loadHighScore();
     this.setupEventListeners();
@@ -193,6 +196,7 @@ class Game {
     this.highScoreCelebrated = false;
     this.restartTextVisible = false;
     this.canRestart = false;
+    this.paused = false;
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
     }
@@ -214,13 +218,28 @@ class Game {
         (event.type === "keydown" && event.code === "Space"));
     const isFlapInput =
       !this.gameOver &&
+      !this.paused &&
       (event.type === "mousedown" ||
         (event.type === "keydown" && event.code === "Space"));
+    const isPauseInput =
+      !this.gameOver && event.type === "keydown" && event.code === "KeyP";
 
     if (isFlapInput) {
       this.bird.flap();
     } else if (isRestartInput) {
       this.reset();
+    } else if (isPauseInput) {
+      this.togglePause();
+    }
+  }
+
+  togglePause() {
+    this.paused = !this.paused;
+    if (this.paused) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.drawPause();
+    } else {
+      this.animationFrameId = requestAnimationFrame(this.gameLoop.bind(this));
     }
   }
 
@@ -359,6 +378,14 @@ class Game {
     this.highScoreCelebrated = true;
   }
 
+  drawPause() {
+    this.ctx.fillStyle = config.game.pauseTextColor;
+    this.ctx.font = config.game.pauseTextFont;
+    this.ctx.textAlign = "center";
+    this.ctx.fillText("PAUSED", this.canvas.width / 2, this.canvas.height / 2);
+    this.ctx.textAlign = "left";
+  }
+
   drawGameOver() {
     this.ctx.fillStyle = config.game.gameOverTextColor;
     this.ctx.font = config.game.gameOverTextFontLarge;
@@ -385,6 +412,11 @@ class Game {
         this.canvas.width / 2,
         this.canvas.height / 2 + 75
       );
+      this.ctx.fillText(
+        "P to Pause & Resume",
+        this.canvas.width / 2,
+        this.canvas.height / 2 + 125
+      );
     }
     this.ctx.textAlign = "left";
     if (this.score > 0 && this.score == this.highScore) {
@@ -393,7 +425,7 @@ class Game {
   }
 
   update() {
-    if (this.gameOver) {
+    if (this.gameOver || this.paused) {
       return;
     }
 
