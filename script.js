@@ -156,6 +156,9 @@ class Game {
     this.highScore = 0;
     this.isHighScoreAnimating = false;
     this.highScoreCelebrated = false;
+    this.restartTextVisible = false;
+    this.restartDelay = 1500;
+    this.canRestart = false;
 
     this.loadHighScore();
     this.setupEventListeners();
@@ -188,6 +191,8 @@ class Game {
     this.gameOver = false;
     this.isHighScoreAnimating = false;
     this.highScoreCelebrated = false;
+    this.restartTextVisible = false;
+    this.canRestart = false;
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
     }
@@ -203,8 +208,10 @@ class Game {
 
   handleInput(event) {
     const isRestartInput =
-      (this.gameOver && event.type === "mousedown") ||
-      (this.gameOver && event.type === "keydown" && event.code === "Space");
+      this.canRestart &&
+      this.gameOver &&
+      (event.type === "mousedown" ||
+        (event.type === "keydown" && event.code === "Space"));
     const isFlapInput =
       !this.gameOver &&
       (event.type === "mousedown" ||
@@ -372,11 +379,13 @@ class Game {
       this.canvas.width / 2,
       this.canvas.height / 2 + 25
     );
-    this.ctx.fillText(
-      "Click / Tap / Space to Restart",
-      this.canvas.width / 2,
-      this.canvas.height / 2 + 75
-    );
+    if (this.restartTextVisible) {
+      this.ctx.fillText(
+        "Click / Tap / Space to Restart",
+        this.canvas.width / 2,
+        this.canvas.height / 2 + 75
+      );
+    }
     this.ctx.textAlign = "left";
     if (this.score > 0 && this.score == this.highScore) {
       this.celebrateHighScore();
@@ -396,6 +405,10 @@ class Game {
 
     if (this.checkCollision()) {
       this.gameOver = true;
+      setTimeout(() => {
+        this.restartTextVisible = true;
+        this.canRestart = true;
+      }, this.restartDelay);
     }
   }
 
