@@ -25,6 +25,11 @@ const config = {
     scorePadding: 10,
     pauseTextColor: "black",
     pauseTextFont: "36px Arial",
+    skyGradients: [
+      ["#70b8ee", "#add8e6"], // Blue to Light Blue
+      ["#6495ed", "#b0e0e6"], // Cornflower Blue to Powder Blue
+      ["#4682b4", "#b0c4de"], // Steel Blue to Light Steel Blue
+    ],
   },
   animation: {
     highScorePulseDuration: 500,
@@ -150,6 +155,7 @@ class Game {
     this.canvas = canvas;
     this.canvas.tabIndex = 0; // Make canvas focusable programmatically
     this.ctx = canvas.getContext("2d");
+    this.skyGradient = this.getRandomSkyGradient();
     this.bird = new Bird(config.bird.startX, canvas.height / 2);
     this.pipes = [];
     this.score = 0;
@@ -166,6 +172,18 @@ class Game {
     this.loadHighScore();
     this.setupEventListeners();
     this.reset();
+  }
+
+  getRandomSkyGradient() {
+    const randomIndex = Math.floor(
+      Math.random() * config.game.skyGradients.length
+    );
+    const colorPair = config.game.skyGradients[randomIndex];
+
+    const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+    gradient.addColorStop(0, colorPair[0]); // Start color
+    gradient.addColorStop(1, colorPair[1]); // End color
+    return gradient;
   }
 
   saveHighScore() {
@@ -243,10 +261,6 @@ class Game {
     }
   }
 
-  clearCanvas() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  }
-
   generatePipes() {
     const lastPipe = this.pipes[this.pipes.length - 1];
     if (
@@ -314,13 +328,9 @@ class Game {
     }
   }
 
-  drawElements() {
-    for (const pipe of this.pipes) {
-      pipe.draw(this.ctx);
-    }
-    this.bird.draw(this.ctx);
-    this.drawScore();
-    this.drawHighScore();
+  drawSky() {
+    this.ctx.fillStyle = this.skyGradient;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
   drawScore() {
@@ -445,8 +455,13 @@ class Game {
   }
 
   render() {
-    this.clearCanvas();
-    this.drawElements();
+    this.drawSky();
+    for (const pipe of this.pipes) {
+      pipe.draw(this.ctx);
+    }
+    this.bird.draw(this.ctx);
+    this.drawScore();
+    this.drawHighScore();
     if (this.gameOver) {
       this.drawGameOver();
     }
